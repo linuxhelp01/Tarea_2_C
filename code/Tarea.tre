@@ -1,0 +1,28 @@
+ÀÄTarea
+   ÀÄMAIN  0/33  Ram=0
+      ÃÄ@cinit1  (Inline)  Ram=0
+      ÃÄ@cinit2  (Inline)  Ram=0
+      ÃÄmax_init  0/69  Ram=0
+      ³  ÃÄ@delay_ms1  (Inline)  Ram=1
+      ³  ÃÄmax_send  0/15  Ram=2
+      ³  ³  ÃÄmax_sendByte  0/32  Ram=2
+      ³  ³  ³  ÀÄmax_pulse_clk  (Inline)  Ram=0
+      ³  ³  ÀÄmax_sendByte  0/32  Ram=2
+      ³  ³     ÀÄ*
+      ³  ÃÄmax_send  0/15  Ram=2
+      ³  ³  ÀÄ*
+      ³  ÃÄmax_send  0/15  Ram=2
+      ³  ³  ÀÄ*
+      ³  ÃÄmax_send  0/15  Ram=2
+      ³  ³  ÀÄ*
+      ³  ÀÄmax_send  0/15  Ram=2
+      ³     ÀÄ*
+      ÃÄconf_button  0/15  Ram=0
+      ÃÄmax_send  0/15  Ram=2
+      ³  ÀÄ*
+      ÃÄmax_send  0/15  Ram=2
+      ³  ÀÄ*
+      ÃÄmax_send  0/15  Ram=2
+      ³  ÀÄ*
+      ÀÄmax_send  0/15  Ram=2
+         ÀÄ*

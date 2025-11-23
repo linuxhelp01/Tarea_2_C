@@ -1,0 +1,28 @@
+int1 estado = 0;   // Estado de algo (LED, modo, etc.)
+
+void conf_button(){
+   set_tris_e(0b000);
+}
+
+void WaitBoton() {  // Entra en un bucle infinito de espera.
+  while (digitalRead(boton))
+    ;  // Se sale del bucle cuando se presiona el botón.
+  while (!digitalRead(boton))
+    ;  // Espera hasta que se suelte el botón si está presionado.
+}
+
+
+void loop() {
+  WaitBoton();         // Espera a que el usuario presione y suelte
+
+  // Aquí SIEMPRE entras después de un cambio de estado del botón
+  estado = !estado;    // Cambias el estado (toggle)
+
+  if (estado) {
+    // Código para el estado "ON"
+    
+  } else {
+    // Código para el estado "OFF"
+    digitalWrite(LED_PIN, LOW);
+  }
+}

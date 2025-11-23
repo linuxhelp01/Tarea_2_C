@@ -1,0 +1,72 @@
+004-005 @WRITE_PROGRAM_MEMORY8.P1
+004-005 @READ_PROGRAM_MEMORY8.P2
+008     PSP_DATA
+015     CCP_1_LOW
+015     CCP_1
+016     CCP_1_HIGH
+01B     CCP_2
+01B     CCP_2_LOW
+01C     CCP_2_HIGH
+020.0   estado
+021     max_send.reg
+021     @delay_ms1.P1
+022     max_send.data
+023     max_sendByte.data
+024     max_sendByte.i
+077     @SCRATCH
+078     @SCRATCH
+078     _RETURN_
+079     @SCRATCH
+07A     @SCRATCH
+09C.6   C1OUT
+09C.7   C2OUT
+10D-10E @WRITE_PROGRAM_MEMORY8.P1
+10D-10E @READ_PROGRAM_MEMORY8.P2
+
+ROM Allocation:
+000004  max_sendByte
+000014  max_pulse_clk
+000024  max_send
+000033  max_init
+00004A  @delay_ms1
+000078  conf_button
+000087  MAIN
+000087  @cinit1
+000092  @cinit2
+
+Project Directory:
+    C:\Users\felip\OneDrive\Desktop\C\code\
+
+Project Files:
+    Tarea.c                                                 [19-nov.-25 16:52  CRC=C162002F]
+    ..\..\..\..\..\..\Program Files (x86)\PICC\Devices\16F877A.h [21-oct.-22 11:02  CRC=6A06E202]
+    display_max.c                                           [18-nov.-25 23:50  CRC=8312BBEC]
+    Botton.c                                                [19-nov.-25 01:14  CRC=7AC4FCDA]
+
+Source signature=A40597D1
+Program memory checksum=0000
+Hex file CRC=968B
+
+Units:
+    C:\Users\felip\OneDrive\Desktop\C\code\Tarea (main)
+
+Compiler Settings:
+    Processor:      PIC16F877A
+    Pointer Size:   16
+    ADC Range:      0-255
+    Opt Level:      9
+    Short,Int,Long: UNSIGNED: 1,8,16
+    Float,Double:   32,32
+    Compile Mode:   CCS5
+
+Output Files:
+    XREF file:   Tarea.xsym
+    Errors:      Tarea.err
+    Ext Symbols: Tarea.esym
+    INHX8:       Tarea.hex
+    Symbols:     Tarea.sym
+    List:        Tarea.lst
+    Debug/COFF:  Tarea.cof
+    Project:     Tarea.ccspjt
+    Call Tree:   Tarea.tre
+    Statistics:  Tarea.STA

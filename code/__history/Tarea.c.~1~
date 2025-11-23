@@ -1,0 +1,119 @@
+#include <16F877A.h>
+#fuses HS,NOWDT,NOPUT,NOLVP,NOPROTECT,BROWNOUT
+#use delay(clock=20000000)
+
+//--------------------------------------------------
+// Definición de pines MAX7219
+//--------------------------------------------------
+#define MAX_DIN   PIN_B0
+#define MAX_CLK   PIN_B1
+#define MAX_CS    PIN_B2
+
+//--------------------------------------------------
+// Pequeño pulso de reloj
+//--------------------------------------------------
+void max_pulse_clk(void) {
+   output_high(MAX_CLK);
+   delay_cycles(1);      // pulso corto, también puede ser delay_us(1)
+   output_low(MAX_CLK);
+}
+
+//--------------------------------------------------
+// Enviar 1 byte al MAX7219 (MSB primero)
+//--------------------------------------------------
+void max_sendByte(unsigned int8 data) {
+   int i;
+   for(i = 0; i < 8; i++) {
+      // Sacar el bit más significativo
+      if(data & 0x80)        // 0x80 = 1000 0000b
+         output_high(MAX_DIN);
+      else
+         output_low(MAX_DIN);
+
+      max_pulse_clk();       // clock
+      data <<= 1;            // desplazar para el siguiente bit
+   }
+}
+
+//--------------------------------------------------
+// Enviar: registro + dato al MAX7219
+//--------------------------------------------------
+void max_send(unsigned int8 reg, unsigned int8 data) {
+   output_low(MAX_CS);        // iniciar transmisión
+   max_sendByte(reg);
+   max_sendByte(data);
+   output_high(MAX_CS);       // latch (LOAD)
+}
+
+//--------------------------------------------------
+// Inicialización del MAX7219
+//--------------------------------------------------
+void max_init(void) {
+   // Configuramos PORTB como salida (al menos B0, B1, B2)
+   set_tris_b(0x00);          // todo B como salida
+   output_low(MAX_DIN);
+   output_low(MAX_CLK);
+   output_high(MAX_CS);
+
+   // Pequeño retardo de seguridad al arrancar
+   delay_ms(50);
+
+   //---------------------------------------------------------------------------  
+   // Config básica del MAX7219
+   //---------------------------------------------------------------------------  
+   max_send(0x0F, 0x00);   // display test off
+   max_send(0x0C, 0x01);   // salir de shutdown (modo normal)
+   max_send(0x0B, 0x01);   // scan limit: usar dígitos 0 y 1 (2 dígitos)
+   max_send(0x0A, 0x08);   // intensidad (0x00 a 0x0F)
+   max_send(0x09, 0xFF);   // decode mode: BCD para todos los dígitos
+
+   // Opcional: limpiar todos los dígitos
+   max_send(1, 0x0F);      // 0x0F en code B = "blank"
+   max_send(2, 0x0F);
+   max_send(3, 0x0F);
+   max_send(4, 0x0F);
+   max_send(5, 0x0F);
+   max_send(6, 0x0F);
+   max_send(7, 0x0F);
+   max_send(8, 0x0F);
+}
+
+//--------------------------------------------------
+// Mostrar un número de 0 a 99 en 2 dígitos
+// Dígito 0 = unidades  (registro 1)
+// Dígito 1 = decenas   (registro 2)
+//--------------------------------------------------
+void max_show2digits(unsigned int8 value) {
+   unsigned int8 unidades, decenas;
+
+   if(value > 99) value = 99;    // tope
+
+   decenas  = value / 10;
+   unidades = value % 10;
+
+   // Con decode mode activado, solo mandas el dígito 0–9
+   max_send(1, unidades);        // DIG0 (registro 1)
+   max_send(2, decenas);         // DIG1 (registro 2)
+}
+
+//--------------------------------------------------
+// Programa principal
+//--------------------------------------------------
+void main(void) {
+
+   max_init();
+
+   // Ejemplo: mostrar 42
+   max_show2digits(42);
+   delay_ms(2000);
+
+   // Contar de 0 a 99
+   while(TRUE) {
+      int8 n;
+      for(n = 0; n < 100; n++) {
+         max_show2digits(n);
+         delay_ms(200);
+      }
+   }
+}
+

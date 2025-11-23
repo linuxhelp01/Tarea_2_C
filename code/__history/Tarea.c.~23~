@@ -1,0 +1,150 @@
+#include <16f877a.h>
+// CAMBIO 1: Oscilador a 4MHz (XT en vez de HS)
+#fuses XT, NOWDT, NOPROTECT, PUT, NOLVP, NOBROWNOUT
+#use delay(clock=4000000) 
+
+// Configuración de Puertos
+#use standard_io(B)
+#use standard_io(E)
+
+// --- PINES MAX7219 ---
+#define MAX_DIN   PIN_B0
+#define MAX_CLK   PIN_B1
+#define MAX_CS    PIN_B2
+
+// --- ENTRADAS (INTERRUPTORES) ---
+// Según tu pauta: 
+// FORM: 0=Cilíndrico, 1=Prisma
+// FILL: 1=Llenar
+// EMPTY: 1=Vaciar
+#define SW_FORM  PIN_E0 
+#define SW_FILL  PIN_E1
+#define SW_EMPTY PIN_E2
+
+// Constantes de Dimensiones (Simulación de entrada variable)
+// Para hacerlas variables de verdad necesitarías más botones o potenciómetros.
+// Por ahora las dejamos definidas aquí.
+float caudal = 0.5; // L/s
+float p_largo = 10.0, p_ancho = 10.0, p_alto = 20.0; // Prisma
+float c_radio = 5.0, c_alto = 20.0; // Cilindro
+const float PI = 3.1416;
+
+// Variables Globales
+float nivel_actual = 0.0; // 0 a 100%
+float tiempo_acumulado = 0.0;
+
+// ==========================================================
+// DRIVER MAX7219 (Mismo de antes, optimizado)
+// ==========================================================
+void max_sendByte(int8 data) {
+   int8 i;
+   for(i=0; i<8; i++) {
+      if((data & 0x80)!=0) output_high(MAX_DIN); else output_low(MAX_DIN);
+      output_high(MAX_CLK);
+      output_low(MAX_CLK); // Pulse
+      data <<= 1;
+   }
+}
+
+void max_send(int8 reg, int8 data) {
+   output_low(MAX_CS);
+   max_sendByte(reg);
+   max_sendByte(data);
+   output_high(MAX_CS);
+}
+
+void max_init(void) {
+   output_low(MAX_DIN); output_low(MAX_CLK); output_high(MAX_CS);
+   delay_ms(50);
+   max_send(0x0F, 0x00); // Test off
+   max_send(0x0C, 0x01); // Shutdown off
+   max_send(0x0B, 0x03); // Scan limit: 4 digitos (0,1,2,3)
+   max_send(0x0A, 0x09); // Intensidad
+   max_send(0x09, 0xFF); // Decode Code B
+   // Limpiar
+   for(int i=1;i<=4;i++) max_send(i, 0x0F);
+}
+
+// ==========================================================
+// FUNCIÓN VISUALIZACIÓN DIVIDIDA
+// ==========================================================
+void actualizar_display(int8 tiempo, int8 nivel) {
+   // Digitos 1 y 2 (Derecha): NIVEL (0-99)
+   int8 n_dec = nivel / 10;
+   int8 n_uni = nivel % 10;
+   
+   max_send(1, n_uni); // Unidades Nivel
+   if(n_dec == 0) max_send(2, 0x0F); else max_send(2, n_dec); // Decenas Nivel
+
+   // Digitos 3 y 4 (Izquierda): TIEMPO (0-99)
+   int8 t_dec = tiempo / 10;
+   int8 t_uni = tiempo % 10;
+   
+   max_send(3, t_uni); // Unidades Tiempo
+   if(t_dec == 0) max_send(4, 0x0F); else max_send(4, t_dec); // Decenas Tiempo
+}
+
+// ==========================================================
+// LÓGICA MATEMÁTICA
+// ==========================================================
+// Calcula cuánto tarda en llenarse el 100% del estanque seleccionado
+float obtener_tiempo_total_llenado() {
+   float volumen = 0.0;
+   
+   // Leemos el interruptor de FORMA
+   if(input(SW_FORM) == 1) { 
+      // 1 = PRISMA
+      volumen = p_largo * p_ancho * p_alto;
+   } else {
+      // 0 = CILINDRO
+      volumen = PI * (c_radio * c_radio) * c_alto;
+   }
+   
+   // Tiempo total (segundos) = Volumen / Caudal
+   return volumen / caudal; 
+}
+
+// ==========================================================
+// MAIN
+// ==========================================================
+void main() {
+   float tiempo_total_ref = 0.0;
+   float step_time = 0.0; // Tiempo que tarda 1%
+   
+   max_init();
+
+   while(TRUE) {
+      // 1. Calcular física según el interruptor de FORMA
+      tiempo_total_ref = obtener_tiempo_total_llenado();
+      
+      // Calculamos cuánto tiempo real representa el nivel actual
+      // Tiempo mostrado = (Nivel Actual / 100) * Tiempo Total necesario
+      tiempo_acumulado = (nivel_actual / 100.0) * tiempo_total_ref;
+
+      // 2. Lógica de INTERRUPTORES (FILL vs EMPTY)
+      
+      if(input(SW_FILL) == 1 && input(SW_EMPTY) == 0) {
+         // MODO LLENADO
+         if(nivel_actual < 99) {
+            nivel_actual += 1.0; // Sube 1%
+            // El delay determina la velocidad de simulación
+            // Si queremos tiempo real, esto debería ser proporcional al step_time
+            // Pero para simulación visual usaremos un delay fijo o escalado
+            delay_ms(100); 
+         }
+      }
+      else if(input(SW_EMPTY) == 1 && input(SW_FILL) == 0) {
+         // MODO VACIADO
+         if(nivel_actual > 0) {
+            nivel_actual -= 1.0; // Baja 1%
+            delay_ms(100);
+         }
+      }
+      
+      // Si ambos están en 0 o ambos en 1, el nivel se mantiene quieto (Pausa)
+
+      // 3. Actualizar Pantalla
+      // Casteamos a int para mostrar en display
+      actualizar_display((int8)tiempo_acumulado, (int8)nivel_actual);
+   }
+}

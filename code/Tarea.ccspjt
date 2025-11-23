@@ -1,0 +1,82 @@
+[PROJECT]
+Target=Tarea.hex
+Processor_Text=PIC16F877A
+CCSVersion=5.112
+Compiler=PCM
+[Target Data]
+FileList=Tarea.c
+[Tarea.c]
+Type=4
+[mru-list]
+1=Tarea.c
+
+[defines]
+buildcount=37
+
+[ProjectLog]
+Days=3
+D1=17-11-2025
+D1_L=10
+D1_L1=[60420]Started Editing.
+D1_L2=[60720]Stopped Editing.
+D1_L3=[61191]Started Editing.
+D1_L4=[61653]Stopped Editing.
+D1_L5=[61764]Started Editing.
+D1_L6=[79521]Project Opened.
+D1_L7=[79574]Started Editing.
+D1_L8=[80306]Stopped Editing.
+D1_L9=[81414]Started Editing.
+D1_L10=[81715]Stopped Editing.
+D2=18-11-2025
+D2_L=17
+D2_L1=[5351]Started Editing.
+D2_L2=[5671]Stopped Editing.
+D2_L3=[11027]Project Closed.
+D2_L4=[11027]Project Opened.
+D2_L5=[14913]Started Editing.
+D2_L6=[15552]Stopped Editing.
+D2_L7=[19834]Started Editing.
+D2_L8=[20517]Stopped Editing.
+D2_L9=[76697]Project Opened.
+D2_L10=[76698]Started Editing.
+D2_L11=[77017]Stopped Editing.
+D2_L12=[83728]Started Editing.
+D2_L13=[84467]Stopped Editing.
+D2_L14=[84550]Started Editing.
+D2_L15=[85303]Stopped Editing.
+D2_L16=[85316]Started Editing.
+D2_L17=[86048]Stopped Editing.
+D3=19-11-2025
+D3_L=11
+D3_L1=[1072]Started Editing.
+D3_L2=[1378]Stopped Editing.
+D3_L3=[2325]Started Editing.
+D3_L4=[3655]Stopped Editing.
+D3_L5=[3659]Started Editing.
+D3_L6=[4344]Stopped Editing.
+D3_L7=[4456]Started Editing.
+D3_L8=[41726]Stopped Editing.
+D3_L9=[60747]Started Editing.
+D3_L10=[61055]Stopped Editing.
+TotalEdit=663
+TotalDebug=0
+D3_E=663
+D3_D=0
+D3_L11=[62047]Project Closed.
+
+[Opened Files]
+1=Tarea.c
+t1=9
+Count=4
+2=display_max.c
+t2=1
+3=Estanque.c
+t3=1
+4=Botton.c
+t4=1
+
+[fileformats]
+forcecoff=0
+[Units]
+Count=1
+1=Tarea (main)
