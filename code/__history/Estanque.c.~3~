@@ -1,0 +1,56 @@
+#define CAUDAL           0.05
+#define FACTOR_VELOCIDAD 1  // 50x mas rapido
+#define DELTA_MS         10
+
+// Definiciones de dimensiones fijas (para no tener "números mágicos" en el código)
+#define PRISMA_LARGO 2.0
+#define PRISMA_ANCHO 2.0
+#define PRISMA_ALTO  3.0
+#define CILINDRO_RADIO 1.5
+#define CILINDRO_ALTO  3.0
+
+typedef struct {
+   float volumen;           // Volumen calculado (m3)
+   int32 umbral_simulacion; // ms necesarios para subir 1%
+   int8 estado;             // 0=Stop, 1=Llenando, 2=Vaciando
+   int8 porcentaje;         // Nivel actual (0-100)
+   int32 contador_tiempo;   // Timer interno
+} Estanque;
+
+
+// Seleccion de modelo
+
+void estanque_seleccionar_modelo(Estanque* e) {
+   
+   // Seguridad: No cambiar si esta trabajando
+   if (e->estado != 0) return; 
+
+   // Lectura del PIN E0 (Pull-Up: 0=Cerrado/GND, 1=Abierto/VCC)
+   if (input(BTN1) == 0) { 
+      // Caso: PRISMA (Switch Cerrado)
+      estanque_calcular_fisica(e, 1, PRISMA_LARGO, PRISMA_ANCHO, PRISMA_ALTO);
+   } 
+   else {
+      // Caso: CILINDRO (Switch Abierto)
+      estanque_calcular_fisica(e, 0, CILINDRO_RADIO, 0.0, CILINDRO_ALTO);
+   }
+}
+
+void estanque_calcular_fisica(Estanque* e, int1 es_prisma, float d1, float d2, float h) {
+   float tiempo_total_real;
+   float tiempo_1_porciento;
+
+   // 1. Calculo de Volumen
+   if (es_prisma) {
+      e->volumen = d1 * d2 * h;            // Largo * Ancho * Alto
+   } else {
+      e->volumen = 3.1416 * (d1 * d1) * h; // PI * r^2 * h
+   }
+
+   // 2. Calculo de Tiempos
+   tiempo_total_real = e->volumen / CAUDAL;
+   tiempo_1_porciento = tiempo_total_real / 100.0;
+
+   // 3. Ajuste para simulacion acelerada (ms por cada 1%)
+   e->umbral_simulacion = (int32)((tiempo_1_porciento * 1000.0) / FACTOR_VELOCIDAD);
+}

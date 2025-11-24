@@ -1,0 +1,116 @@
+// estanque_fisica.c - Manejo de la simulación del estanque
+
+// --- CONSTANTES DE FÍSICA ---
+#define CAUDAL          5
+#define DELTA_TIME_MS   100   // Tiempo de muestreo real del PIC (0.1s)
+// Dimensiones
+#define PRISMA_L  2.0
+#define PRISMA_A  2.0
+#define PRISMA_H  3.0
+#define CILINDRO_R 1.5
+#define CILINDRO_H 3.0
+
+// --- VARIABLES GLOBALES DEL SISTEMA ---
+float volumen_total;
+float tiempo_total_real_seg;
+int32 ticks_para_1_porciento; // Cuantos ciclos de 100ms equivalen a 1%
+
+// Variables de Estado (Lo que cambia)
+int8  nivel_porcentaje = 0;
+int16 tiempo_transcurrido_seg = 0;
+int32 contador_interno_ms = 0;
+int32 acumulador_segundos_reales = 0; // Para contar segundos precisos
+
+// Estados de la bomba: 0=Stop, 1=Llenando, 2=Vaciando
+int8 estado_proceso = 0; 
+
+
+// ---------------------------------------------------------
+// PASO 1: CONFIGURAR FORMA
+// Se llama cuando cambia el interruptor FORM
+// ---------------------------------------------------------
+void estanque_configurar_fisica(int1 es_prismatico) {
+   float tiempo_1_porc;
+   
+   // 1. Calcular Volumen
+   if (es_prismatico) {
+      volumen_total = PRISMA_L * PRISMA_A * PRISMA_H;
+   } else {
+      volumen_total = 3.1416 * (CILINDRO_R * CILINDRO_R) * CILINDRO_H;
+   }
+
+   // 2. Calcular Tiempos Reales
+   tiempo_total_real_seg = volumen_total / CAUDAL;
+   tiempo_1_porc = tiempo_total_real_seg / 100.0;
+   
+   // 3. Convertir a "Ticks" del procesador
+   // Si el bucle corre cada 100ms, ¿cuántas vueltas son 1%?
+   ticks_para_1_porciento = (int32)((tiempo_1_porc * 1000.0) / DELTA_TIME_MS);
+}
+
+
+// ---------------------------------------------------------
+// PASO 2: CONTROLAR INICIO/PARADA
+// Revisa condiciones de seguridad y activa estados
+// ---------------------------------------------------------
+void estanque_procesar_botones(int1 btn_fill, int1 btn_empty) {
+   
+   // REGLA 1: Solo aceptamos ordenes si está quieto
+   if (estado_proceso == 0) {
+      
+      // INICIAR LLENADO: Si pulsan FILL y está vacío (0%)
+      // *Nota: Tu guia dice iniciar de 0 a 80. Asumimos start en 0.
+      if (btn_fill == 1 && nivel_porcentaje < 80) {
+         estado_proceso = 1; // Modo Llenar
+      }
+      
+      // INICIAR VACIADO: Si pulsan EMPTY y está al 80%
+      else if (btn_empty == 1 && nivel_porcentaje >= 80) {
+         estado_proceso = 2; // Modo Vaciar
+      }
+   }
+}
+
+
+// ---------------------------------------------------------
+// PASO 3: MOTOR DE SIMULACIÓN (Tick)
+// Avanza el tiempo y mueve el agua
+// ---------------------------------------------------------
+void estanque_simular_paso() {
+   
+   if (estado_proceso != 0) { // Solo si la bomba está andando
+      
+      contador_interno_ms++;
+      
+      // CONTROL DE TIEMPO REAL (Segundero)
+      // Cada 10 ticks de 100ms = 1 segundo real
+      acumulador_segundos_reales++;
+      if(acumulador_segundos_reales >= 10) { // 10 * 100ms = 1000ms = 1s
+         tiempo_transcurrido_seg++;
+         acumulador_segundos_reales = 0;
+      }
+
+      // CONTROL DE NIVEL DE AGUA
+      // ¿Pasó suficiente tiempo para subir/bajar 1%?
+      if (contador_interno_ms >= ticks_para_1_porciento) {
+         contador_interno_ms = 0; // Reset parcial
+
+         // CASO 1: LLENANDO
+         if (estado_proceso == 1) {
+            nivel_porcentaje++;
+            if (nivel_porcentaje >= 80) { // META ALCANZADA
+               nivel_porcentaje = 80;
+               estado_proceso = 0; // Parada Automática
+            }
+         }
+         // CASO 2: VACIANDO
+         else if (estado_proceso == 2) {
+            nivel_porcentaje--;
+            if (nivel_porcentaje <= 20) { // META ALCANZADA
+               nivel_porcentaje = 20;
+               estado_proceso = 0; // Parada Automática
+            }
+         }
+      }
+   }
+}

@@ -1,0 +1,25 @@
+#include <16F877A.h>
+#fuses HS,NOWDT,NOPUT,NOLVP,NOPROTECT,BROWNOUT
+#use delay(clock=20M)
+
+#include "display_max.c"
+#include "Estanque.c"
+#include "Botton.c"
+
+
+void main() {
+   max_init();
+   conf_button();
+   
+if (read_button(BTN1)) {   // "Función de botton" (Universal)
+      
+      // "Código que quiero que se ejecute al ser presionado"
+      estado_btn1 = !estado_btn1; // Cambia estado (0 a 1, o 1 a 0)
+      
+      if(estado_btn1) {
+         max_send(1, 1); // Ejemplo: Muestra 1 en display
+      } else {
+         max_send(1, 0); // Ejemplo: Muestra 0 en display
+      }
+   }
+}

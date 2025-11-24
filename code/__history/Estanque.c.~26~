@@ -12,7 +12,7 @@ int8 tiempo_seg = 0;      // Segundos transcurridos
 int8  estado = 0;          // 0=Stop, 1=Llenando, 2=Vaciando
 
 // --- VARIABLES INTERNAS ---
-int16 ms_reloj = 0;        // Contador milisegundos para reloj
+int8 ms_reloj = 0;        // Contador milisegundos para reloj
 int8 ms_agua = 0;         // Contador milisegundos para nivel
 int8 velocidad_actual = 60; 
 

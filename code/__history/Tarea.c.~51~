@@ -1,0 +1,66 @@
+#include <16F877A.h>
+#fuses HS,NOWDT,NOPUT,NOLVP,NOPROTECT,BROWNOUT
+#use delay(clock=20M)
+
+#include "display_max.c"
+#include "Estanque.c"
+#include "Botton.c"
+
+
+void main() {
+   // --- VARIABLES DE ESTADO ---
+   int8 contador = 0;      // Variable para el BTN1
+   int1 interruptor = 0;   // Variable para el BTN2
+
+   // --- INICIALIZACIÓN ---
+   max_init();       // Inicia la pantalla MAX7219
+   conf_button();    // Configura los puertos E como entrada
+   
+   // Limpiamos la pantalla inicial (Dígitos 1, 2 y 3 en 0)
+   max_send(1, 0);   
+   max_send(2, 0);
+   max_send(3, 0);
+
+   // --- BUCLE INFINITO ---
+   while(TRUE) {
+      
+      // -----------------------------------------------------------
+      // PRUEBA BOTÓN 1: CONTADOR (Incrementa valor en Dígito 1)
+      // -----------------------------------------------------------
+      if (read_button(BTN1)) {
+         contador++;
+         if (contador > 9) contador = 0; // Si pasa de 9, vuelve a 0
+         
+         max_send(1, contador); // Muestra el contador en el primer display
+      }
+
+      // -----------------------------------------------------------
+      // PRUEBA BOTÓN 2: INTERRUPTOR ON/OFF (Dígito 2)
+      // -----------------------------------------------------------
+      if (read_button(BTN2)) {
+         interruptor = !interruptor; // Invierte el valor (0->1 o 1->0)
+         
+         // Muestra 1 si está ON, 0 si está OFF en el segundo display
+         max_send(2, interruptor);   
+      }
+
+      // -----------------------------------------------------------
+      // PRUEBA BOTÓN 3: RESET GENERAL (Borra todo)
+      // -----------------------------------------------------------
+      if (read_button(BTN3)) {
+         // Reseteamos las variables
+         contador = 0;
+         interruptor = 0;
+         
+         // Visualizamos que se hizo un reset
+         max_send(1, 0); // Contador a 0
+         max_send(2, 0); // Interruptor a 0
+         
+         // Efecto visual en el Dígito 3 para confirmar el click
+         max_send(3, 8); // Muestra un 8 momentáneo
+         delay_ms(300);
+         max_send(3, 0); // Apaga
+      }
+
+   }
+}

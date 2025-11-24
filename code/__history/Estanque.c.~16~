@@ -1,0 +1,95 @@
+// --- CONSTANTES ---
+#define CAUDAL        2.00  // m3/seg
+#define DELTA_MS      100   // Tiempo del ciclo main (0.1s)
+
+// --- VARIABLES GLOBALES (Accesibles desde el main) ---
+int8  nivel = 0;           // 0-100%
+int16 tiempo_seg = 0;      // Cronómetro
+int8  estado = 0;          // 0=Stop, 1=Llenando, 2=Vaciando
+
+// Variables internas
+int32 ms_contador = 0;     // Cuenta milisegundos
+int32 ms_velocidad = 0;    // Define qué tan rápido se llena (según forma)
+
+// ---------------------------------------------------------
+// CALCULAR FÍSICA (Solo se llama si estamos PARADOS)
+// ---------------------------------------------------------
+void leer_forma_fisica() {
+   float volumen = 0.0;
+   
+   // SWITCH E0 (Pull-Up: 0 = Cerrado/Activo)
+   if (input(PIN_E0) == 0) {
+      // PRISMA (2x2x3 = 12m3)
+      volumen = 12.0; 
+   } else {
+      // CILINDRO (Pi*1.5^2*3 = ~21.2m3)
+      volumen = 21.205; 
+   }
+
+   // Cálculo de velocidad real
+   float tiempo_total = volumen / CAUDAL;
+   float tiempo_1_porc = tiempo_total / 100.0;
+   
+   // Convertimos a ms para el PIC
+   ms_velocidad = (int32)(tiempo_1_porc * 1000.0);
+}
+
+// ---------------------------------------------------------
+// LÓGICA PRINCIPAL (Botones y Simulación)
+// ---------------------------------------------------------
+void gestionar_sistema() {
+   
+   // ======================================================
+   // FASE 1: SISTEMA EN REPOSO (STOP)
+   // Aquí es el ÚNICO momento donde aceptamos cambios
+   // ======================================================
+   if (estado == 0) {
+      
+      // 1. Leemos la forma (Prisma/Cilindro)
+      // Si el sistema arranca, ya no entraremos aquí, así que la forma se bloquea.
+      leer_forma_fisica();
+
+      // 2. Leemos Botones de Inicio (Pull-Up: 0 = Presionado)
+      
+      // Botón E1: Llenar (Solo si nivel < 80)
+      if (input(PIN_E1) == 0 && nivel < 80) {
+         estado = 1; // ¡Arranca el llenado!
+      }
+      
+      // Botón E2: Vaciar (Solo si nivel >= 80)
+      else if (input(PIN_E2) == 0 && nivel >= 80) {
+         estado = 2; // ¡Arranca el vaciado!
+      }
+   }
+
+   // ======================================================
+   // FASE 2: SISTEMA EN MOVIMIENTO (RUNNING)
+   // Aquí ignoramos el Switch E0 y simulamos el agua
+   // ======================================================
+   else {
+      ms_contador += DELTA_MS;
+
+      // Actualizar Segundero (cada 1000ms)
+      if (ms_contador % 1000 == 0) tiempo_seg++;
+
+      // Actualizar Nivel (según la velocidad calculada antes)
+      if (ms_contador >= ms_velocidad) {
+         ms_contador = 0;
+
+         if (estado == 1) { // LLENANDO
+            nivel++;
+            if (nivel >= 80) { 
+               nivel = 80; 
+               estado = 0; // Terminó -> Vuelve a Reposo
+            }
+         }
+         else if (estado == 2) { // VACIANDO
+            nivel--;
+            if (nivel <= 20) { 
+               nivel = 20; 
+               estado = 0; // Terminó -> Vuelve a Reposo
+            }
+         }
+      }
+   }
+}

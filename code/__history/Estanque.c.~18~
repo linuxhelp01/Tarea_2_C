@@ -1,0 +1,82 @@
+// --- CONSTANTES ---
+#define CAUDAL        0.05  
+#define DELTA_MS      100   
+
+// --- VARIABLES ---
+int8  nivel = 0;           
+int16 tiempo_seg = 0;      
+int8  estado = 0;          
+
+int32 ms_contador_nivel = 0; 
+int32 ms_contador_reloj = 0; 
+int32 ms_velocidad = 0;      
+
+void leer_forma_fisica() {
+   // (El código de cálculo de volumen sigue igual...)
+   if (input(PIN_E0) == 0) { volumen = 12.0; } 
+   else { volumen = 21.205; }
+   ms_velocidad = (int32)((volumen / CAUDAL / 100.0) * 1000.0);
+}
+
+// ---------------------------------------------------------
+// LÓGICA PRINCIPAL
+// ---------------------------------------------------------
+void gestionar_sistema() {
+   
+   // [CANDADO ABIERTO] 
+   // Solo entramos aquí si el sistema está PARADO
+   if (estado == 0) {
+      
+      leer_forma_fisica(); // Aquí sí se puede cambiar la forma
+
+      // --- DETECCIÓN DE INICIO DE LLENADO ---
+      if (input(PIN_E1) == 0 && nivel < 80) {
+         estado = 1; // Cambiamos estado a "Llenando"
+         
+         // AQUÍ SE REINICIA EL TIEMPO (Solo al arrancar)
+         tiempo_seg = 0;        
+         ms_contador_reloj = 0; 
+         ms_contador_nivel = 0; 
+      }
+      
+      // --- DETECCIÓN DE INICIO DE VACIADO ---
+      else if (input(PIN_E2) == 0 && nivel >= 80) {
+         estado = 2; // Cambiamos estado a "Vaciando"
+         
+         // AQUÍ SE REINICIA EL TIEMPO (Solo al arrancar)
+         tiempo_seg = 0;        
+         ms_contador_reloj = 0; 
+         ms_contador_nivel = 0; 
+      }
+   }
+
+   // [CANDADO CERRADO]
+   // Si estado es 1 o 2, entramos aquí.
+   // NOTA: Aquí NO hay lectura de botones. Si presionas, no pasa nada.
+   else {
+      ms_contador_nivel += DELTA_MS;
+      ms_contador_reloj += DELTA_MS;
+
+      // Reloj sigue contando sin importar los botones
+      if (ms_contador_reloj >= 1000) {
+         tiempo_seg++;
+         ms_contador_reloj = 0;
+      }
+
+      // Física del agua
+      if (ms_contador_nivel >= ms_velocidad) {
+         ms_contador_nivel = 0;
+
+         if (estado == 1) { 
+            nivel++;
+            // Al terminar, volvemos a estado 0 y se "abre el candado"
+            if (nivel >= 80) { nivel = 80; estado = 0; }
+         }
+         else if (estado == 2) { 
+            nivel--;
+            // Al terminar, volvemos a estado 0 y se "abre el candado"
+            if (nivel <= 20) { nivel = 20; estado = 0; }
+         }
+      }
+   }
+}

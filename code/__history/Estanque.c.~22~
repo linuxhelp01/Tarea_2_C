@@ -1,0 +1,70 @@
+// --- CONSTANTES DE TIEMPO (PRE-CALCULADAS) ---
+// Supongamos Caudal = 2.0. 
+// PRISMA: Vol=12. TiempoTotal=6s.  1%=0.06s -> 60ms
+// CILINDRO: Vol=21.2. TiempoTotal=10.6s. 1%=0.106s -> 106ms
+
+#define VELOCIDAD_PRISMA   60   // milisegundos para 1%
+#define VELOCIDAD_CILINDRO 106  // milisegundos para 1%
+#define DELTA_MS           100  // Paso del main
+
+// --- VARIABLES GLOBALES (Optimizadas) ---
+int8  nivel = 0;           // 1 byte
+int16 tiempo_seg = 0;      // 2 bytes (suficiente para 18 horas)
+int8  estado = 0;          // 1 byte
+
+// --- VARIABLES INTERNAS (Optimizadas) ---
+// Bajamos de int32 (4 bytes) a int16 (2 bytes)
+int16 ms_contador_reloj = 0; 
+int16 ms_contador_agua  = 0; 
+int16 ms_velocidad      = 0; 
+
+// -------------------------------------------------------------------------
+// FUNCIÓN ÚNICA OPTIMIZADA
+// -------------------------------------------------------------------------
+void simular_estanque_completo() {
+
+   if (estado == 0) {
+      // --- AHORRO DE MEMORIA ROM Y RAM ---
+      // Ya no hay formulas matemáticas complejas aqui.
+      // Simplemente asignamos el valor pre-calculado.
+      
+      if (input(PIN_E0) == 0) ms_velocidad = VELOCIDAD_PRISMA;
+      else                    ms_velocidad = VELOCIDAD_CILINDRO;
+
+      // DETECTAR INICIO (Igual que antes)
+      if (input(PIN_E1) == 0 && nivel < 80) {
+         estado = 1; // Llenar
+         tiempo_seg = 0; ms_contador_reloj = 0; ms_contador_agua = 0;
+      }
+      else if (input(PIN_E2) == 0 && nivel >= 80) {
+         estado = 2; // Vaciar
+         tiempo_seg = 0; ms_contador_reloj = 0; ms_contador_agua = 0;
+      }
+   }
+   else {
+      // Avanzamos contadores
+      ms_contador_reloj += DELTA_MS;
+      ms_contador_agua  += DELTA_MS;
+
+      // 1. RELOJ
+      if (ms_contador_reloj >= 1000) {
+         tiempo_seg++;
+         ms_contador_reloj = 0;
+      }
+
+      // 2. NIVEL AGUA
+      // Usamos la variable ms_velocidad que ya tiene el valor fijo (60 o 106)
+      if (ms_contador_agua >= ms_velocidad) {
+         ms_contador_agua = 0;
+
+         if (estado == 1) {
+            nivel++;
+            if (nivel >= 80) { nivel = 80; estado = 0; }
+         }
+         else {
+            nivel--;
+            if (nivel <= 20) { nivel = 20; estado = 0; }
+         }
+      }
+   }
+}

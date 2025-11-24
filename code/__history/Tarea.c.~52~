@@ -1,0 +1,43 @@
+#include <16F877A.h>
+#fuses HS,NOWDT,NOPUT,NOLVP,NOPROTECT,BROWNOUT
+#use delay(clock=20M)
+
+#include "display_max.c"
+#include "Estanque.c"
+#include "Botton.c"
+
+
+void main() {
+   int8 i; // Variable para el contador
+
+   // --- INICIALIZACIÓN ---
+   max_init();       // Configura el MAX7219 (scan limit, intensidad, etc.)
+   
+   // --- BUCLE INFINITO DE PRUEBA ---
+   while(TRUE) {
+      
+      // Secuencia 1: Contar del 0 al 9 en todos los displays simultáneamente
+      for(i=0; i<=9; i++) {
+         max_send(1, i); // Dígito 1
+         max_send(2, i); // Dígito 2
+         max_send(3, i); // Dígito 3
+         max_send(4, i); // Dígito 4
+         
+         delay_ms(500);  // Velocidad de la secuencia (medio segundo)
+      }
+
+      // Secuencia 2: Parpadeo de "1-2-3-4" para verificar orden
+      max_send(1, 1);
+      max_send(2, 2);
+      max_send(3, 3);
+      max_send(4, 4);
+      delay_ms(1000);
+
+      // Limpiar pantalla (0x0F es código 'blank' en decodificación BCD del MAX7219)
+      max_send(1, 0x0F);
+      max_send(2, 0x0F);
+      max_send(3, 0x0F);
+      max_send(4, 0x0F);
+      delay_ms(500);
+   }
+}

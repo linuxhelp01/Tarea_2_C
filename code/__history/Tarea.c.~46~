@@ -1,0 +1,23 @@
+#include <16F877A.h>
+#fuses HS,NOWDT,NOPUT,NOLVP,NOPROTECT,BROWNOUT
+#use delay(clock=20M)
+
+#include "display_max.c"
+#include "Estanque.c"
+#include "Botton.c"
+
+
+void main() {
+   max_init();
+   conf_button();
+
+   // Mostrar el número 8 en el dígito 0 (registro 1)
+   max_send(1, 1);
+   max_send(2, 2);
+   max_send(3, 3);
+   max_send(4, 4);
+   
+   while(TRUE) {
+      // no hace nada más
+   }
+}

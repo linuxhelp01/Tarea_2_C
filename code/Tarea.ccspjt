@@ -11,10 +11,10 @@ Type=4
 1=Tarea.c
 
 [defines]
-buildcount=37
+buildcount=64
 
 [ProjectLog]
-Days=3
+Days=5
 D1=17-11-2025
 D1_L=10
 D1_L1=[60420]Started Editing.
@@ -58,22 +58,60 @@ D3_L7=[4456]Started Editing.
 D3_L8=[41726]Stopped Editing.
 D3_L9=[60747]Started Editing.
 D3_L10=[61055]Stopped Editing.
-TotalEdit=663
+TotalEdit=713
 TotalDebug=0
 D3_E=663
 D3_D=0
 D3_L11=[62047]Project Closed.
+D4=23-11-2025
+D4_L=29
+D4_L1=[59409]Project Opened.
+D4_L2=[62773]Started Editing.
+D4_L3=[63311]Stopped Editing.
+D4_L4=[65301]Started Editing.
+D4_L5=[65601]Stopped Editing.
+D4_L6=[78320]Started Editing.
+D4_L7=[78919]Stopped Editing.
+D4_L8=[79158]Started Editing.
+D4_L9=[79548]Stopped Editing.
+D4_L10=[79616]Started Editing.
+D4_L11=[80942]Stopped Editing.
+D4_L12=[80989]Started Editing.
+D4_L13=[81289]Stopped Editing.
+D4_L14=[81357]Started Editing.
+D4_L15=[81779]Stopped Editing.
+D4_L16=[81830]Started Editing.
+D4_L17=[82130]Stopped Editing.
+D4_L18=[82194]Started Editing.
+D4_L19=[83183]Stopped Editing.
+D4_L20=[83297]Started Editing.
+D4_L21=[83657]Stopped Editing.
+D4_L22=[84269]Started Editing.
+D4_L23=[84678]Stopped Editing.
+D4_E=44
+D4_D=0
+D4_L24=[84707]Project Closed.
+D4_L25=[85080]Project Opened.
+D4_L26=[85145]Started Editing.
+D4_L27=[85612]Stopped Editing.
+D4_L28=[85861]Started Editing.
+D4_L29=[86326]Stopped Editing.
+D5=24-11-2025
+D5_E=6
+D5_D=0
+D5_L=1
+D5_L1=[397]Project Closed.
 
 [Opened Files]
 1=Tarea.c
-t1=9
-Count=4
+t1=4
+Count=3
 2=display_max.c
 t2=1
 3=Estanque.c
 t3=1
-4=Botton.c
-t4=1
+4=Estanque.c
+t4=11
 
 [fileformats]
 forcecoff=0

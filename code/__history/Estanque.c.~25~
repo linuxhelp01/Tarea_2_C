@@ -13,8 +13,8 @@ int8  estado = 0;          // 0=Stop, 1=Llenando, 2=Vaciando
 
 // --- VARIABLES INTERNAS ---
 int16 ms_reloj = 0;        // Contador milisegundos para reloj
-int8 ms_agua = 0;         // Contador milisegundos para nivel
-int8 velocidad_actual = 60; 
+int16 ms_agua = 0;         // Contador milisegundos para nivel
+int16 velocidad_actual = 60; 
 
 void simular_estanque() {
 

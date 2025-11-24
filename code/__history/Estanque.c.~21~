@@ -1,0 +1,111 @@
+// --- CONSTANTES Y VARIABLES ---
+// (Mismas que tenías antes, sin cambios)
+#define CAUDAL        2.00 
+#define DELTA_MS      100  
+
+int8  nivel = 0;           
+int16 tiempo_seg = 0;      
+int8  estado = 0;          // 0=Stop, 1=Llenando, 2=Vaciando
+
+int32 ms_contador_nivel = 0; 
+int32 ms_contador_reloj = 0; 
+int32 ms_velocidad = 0;      
+
+// ---------------------------------------------------------
+// FUNCION 1: CÁLCULO (Determina la velocidad)
+// ---------------------------------------------------------
+void leer_forma_fisica() {
+   float volumen = 0.0;
+   // (Misma lógica de antes...)
+   if (input(PIN_E0) == 0) volumen = 12.0;       
+   else                    volumen = 21.205;     
+
+   float tiempo_total = volumen / CAUDAL;
+   ms_velocidad = (int32)((tiempo_total / 100.0) * 1000.0);
+}
+
+// ---------------------------------------------------------
+// FUNCION 2: RESET (Limpia las variables al iniciar)
+// ---------------------------------------------------------
+void resetear_contadores() {
+   tiempo_seg = 0;        
+   ms_contador_reloj = 0; 
+   ms_contador_nivel = 0; 
+}
+
+// ---------------------------------------------------------
+// FUNCION 3: ENTRADAS (Solo actúa si está en REPOSO)
+// ---------------------------------------------------------
+void verificar_inicio() {
+   leer_forma_fisica(); // Solo calculamos física aquí
+
+   // CASO A: INICIAR LLENADO
+   if (input(PIN_E1) == 0 && nivel < 80) {
+      estado = 1; 
+      resetear_contadores();
+   }
+   
+   // CASO B: INICIAR VACIADO
+   else if (input(PIN_E2) == 0 && nivel >= 80) {
+      estado = 2; 
+      resetear_contadores();
+   }
+}
+
+// ---------------------------------------------------------
+// FUNCION 4: RELOJ (Solo actúa si está en MOVIMIENTO)
+// ---------------------------------------------------------
+void actualizar_reloj() {
+   ms_contador_reloj += DELTA_MS;
+
+   // Si pasaron 1000ms, sumamos 1 segundo
+   if (ms_contador_reloj >= 1000) {
+      tiempo_seg++;
+      ms_contador_reloj = 0; 
+   }
+}
+
+// ---------------------------------------------------------
+// FUNCION 5: FÍSICA AGUA (Solo actúa si está en MOVIMIENTO)
+// ---------------------------------------------------------
+void actualizar_fisica() {
+   ms_contador_nivel += DELTA_MS;
+
+   // Si pasó el tiempo necesario para mover 1%
+   if (ms_contador_nivel >= ms_velocidad) {
+      ms_contador_nivel = 0;
+
+      // SUBIR AGUA
+      if (estado == 1) { 
+         nivel++;
+         if (nivel >= 80) { // Límite superior
+            nivel = 80; 
+            estado = 0; // Stop
+         }
+      }
+      // BAJAR AGUA
+      else if (estado == 2) { 
+         nivel--;
+         if (nivel <= 20) { // Límite inferior
+            nivel = 20; 
+            estado = 0; // Stop
+         }
+      }
+   }
+}
+
+// =========================================================
+// FUNCIÓN PRINCIPAL (COORDINADOR)
+// =========================================================
+void gestionar_sistema() {
+   
+   // Si el sistema está quieto... solo miramos botones
+   if (estado == 0) {
+      verificar_inicio();
+   }
+   // Si el sistema se está moviendo... calculamos tiempo y agua
+   else {
+      actualizar_reloj();
+      actualizar_fisica();
+   }
+}

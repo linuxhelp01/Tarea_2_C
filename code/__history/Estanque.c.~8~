@@ -1,0 +1,39 @@
+// --- CONSTANTES ---
+#define CAUDAL        0.05  // m3 por segundo
+#define DELTA_MS      100   // Tiempo del ciclo del main (0.1 seg para mejor respuesta)
+
+// Medidas Físicas
+#define PRISMA_LARGO    2.0
+#define PRISMA_ANCHO    2.0
+#define PRISMA_ALTO     3.0
+#define CILINDRO_RADIO  1.5
+#define CILINDRO_ALTO   3.0
+
+// --- 2. VARIABLE GLOBAL (La Pizarra) ---
+// Aquí guardaremos el resultado para que el main lo pueda ver
+float volumen_total = 0.0;
+int32 ticks_para_1_porciento = 0; 
+
+// Dinámicas (Cambian constantemente)
+int8 nivel_actual = 0;      // 0 - 100%
+int32 contador_ticks = 0;   // Cuenta pasos de tiempo
+int8 estado_bomba = 0;      // 0=Stop, 1=Llenando, 2=Vaciando
+
+// --- 3. FUNCIÓN DE SELECCIÓN ---7
+void seleccionar_estanque() {
+   
+   // 0 = CERRADO (modelo prismatico)
+   if (input(BTN1) == 0) {
+      
+      // Cálculo: Largo * Ancho * Alto
+      volumen_total = PRISMA_LARGO * PRISMA_ANCHO * PRISMA_ALTO;
+      
+   }
+   
+   // 1 = ABIERTO (modelo cilindrico)
+   else {
+      
+      // Cálculo: PI * Radio * Radio * Alto
+      volumen_total= 3.1416 * (CILINDRO_RADIO * CILINDRO_RADIO) * CILINDRO_ALTO;
+   }
+}

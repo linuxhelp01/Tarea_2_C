@@ -1,9 +1,9 @@
-D G "__PCM__" 0 28 ""5.112""
-D G "__DEVICE__" 0 28 "877"
-D G "__DATE__" 0 28 ""19-Nov-25""
-D G "__TIME__" 0 28 ""16:52:38""
-D G "_UNICODE" 0 28 ""?""
-D G "__EVAL" 0 28 ""?"" "Standard Header file for the PIC16F877A device ////////////////"
+D G "__PCM__" 0 38 ""5.112""
+D G "__DEVICE__" 0 38 "877"
+D G "__DATE__" 0 38 ""23-Nov-25""
+D G "__TIME__" 0 38 ""23:53:48""
+D G "_UNICODE" 0 38 ""?""
+D G "__EVAL" 0 38 ""?"" "Standard Header file for the PIC16F877A device ////////////////"
 c L "set_tris_a" 1 3 6 "FUNCTION"
 F N "set_tris_a" 1 37 ""
 V L "value" 1 37 "int8" `55 
@@ -1171,49 +1171,54 @@ D G "MAX_CLK" 2 3 "PIN_B1"
 D G "MAX_CS" 2 4 "PIN_B2"
 F N "max_pulse_clk" 2 6 ""
 F G "max_pulse_clk" 2 6 "void()" `700 
-F N "max_sendByte" 2 12 ""
-V L "data" 2 12 "int8" `702 
-F G "max_sendByte" 2 12 "void(int8 data)" `701 
-V L "i" 2 13 "int8" `703  "Compara el valor ingresado con 0b10000000"
-C L "max_sendByte" 2 1 1 "FUNCTION"
-C L "max_sendByte" 2 1 1 "FUNCTION"
-C L "max_sendByte" 2 1 1 "FUNCTION"
-C L "max_sendByte" 2 1 1 "FUNCTION"
-F N "max_send" 2 27 ""
-V L "reg" 2 27 "int8" `705 
-V L "data" 2 27 "int8" `706 
-F G "max_send" 2 27 "void(int8 reg,int8 data)" `704 
-F N "max_init" 2 34 ""
-F G "max_init" 2 34 "void()" `707  "RB0,RB1,RB2 como salida"
+F N "max_sendByte" 2 10 ""
+V L "data" 2 10 "int8" `702 
+F G "max_sendByte" 2 10 "void(int8 data)" `701 
+V L "i" 2 11 "int8" `703 
+F N "max_send" 2 20 ""
+V L "reg" 2 20 "int8" `705 
+V L "data" 2 20 "int8" `706 
+F G "max_send" 2 20 "void(int8 reg,int8 data)" `704 
+F N "max_init" 2 27 ""
+F G "max_init" 2 27 "void()" `707 
 C L "max_init" 2 1 1 "FUNCTION"
 C L "max_init" 2 1 1 "FUNCTION"
 C L "max_init" 2 1 1 "FUNCTION"
 C L "max_init" 2 1 1 "FUNCTION"
-C L "max_init" 2 1 1 "FUNCTION"
-C L "max_init" 2 1 1 "FUNCTION"
-C L "max_init" 2 1 1 "FUNCTION"
-D G "BTN1" 3 1 "PIN_E0"
-D G "BTN2" 3 2 "PIN_E1"
-D G "BTN3" 3 3 "PIN_E2"
-V G "estado" 3 5 "int1" `708 
-C L "conf_button" 3 5 1 "FUNCTION"
-F N "conf_button" 3 7 ""
-F G "conf_button" 3 7 "void()" `709  "Desactivar entradas analógicas: usar todos los pines como digitales"
-C L "conf_button" 3 5 2 "FUNCTION"
-F N "WaitBoton" 3 17 ""
-F G "WaitBoton" 3 17 "void()" `710  "Asumimos botón con pull-up: en reposo = 1, presionado = 0"
-C L "WaitBoton" 3 5 1 "FUNCTION"
-C L "WaitBoton" 3 5 1 "FUNCTION"
-C L "WaitBoton" 3 5 1 "FUNCTION"
-C L "WaitBoton" 3 5 1 "FUNCTION"
-F N "state_boton" 3 30 ""
-F G "state_boton" 3 30 "void()" `711 
-C L "state_boton" 3 5 2 "FUNCTION"
-C L "state_boton" 3 5 1 "FUNCTION"
-C L "state_boton" 3 5 1 "FUNCTION"
-F N "MAIN" 0 11 ""
-F G "MAIN" 0 11 "void()" `712 
-C L "MAIN" 0 15 1 "FUNCTION"
+C L "max_init" 2 1 2 "FUNCTION"
+D G "VELOCIDAD_PRISMA" 3 5 "60"
+D G "VELOCIDAD_CILINDRO" 3 6 "106"
+D G "DELTA_MS" 3 7 "100" "Tiempo del bucle main"
+V G "nivel" 3 10 "int8" `708 
+V G "tiempo_seg" 3 11 "int8" `709 
+V G "estado" 3 12 "int8" `710 
+V G "ms_reloj" 3 15 "int16" `711 
+V G "ms_agua" 3 16 "int8" `712 
+V G "velocidad_actual" 3 17 "int8" `713 
+F N "simular_estanque" 3 19 ""
+F G "simular_estanque" 3 19 "void()" `714  "CASO 1: SISTEMA DETENIDO (Configuración)"
+C L "simular_estanque" 3 1 2 "FUNCTION"
+C L "simular_estanque" 3 1 1 "FUNCTION"
+C L "simular_estanque" 3 1 1 "FUNCTION"
+C L "simular_estanque" 3 1 1 "FUNCTION"
+C L "simular_estanque" 3 1 1 "FUNCTION"
+C L "simular_estanque" 3 1 1 "FUNCTION"
+C L "simular_estanque" 3 1 1 "FUNCTION"
+C L "simular_estanque" 3 1 1 "FUNCTION"
+C L "simular_estanque" 3 1 1 "FUNCTION"
+C L "simular_estanque" 3 1 1 "FUNCTION"
+C L "simular_estanque" 3 1 1 "FUNCTION"
+C L "simular_estanque" 3 1 1 "FUNCTION"
+F N "MAIN" 0 8 ""
+F G "MAIN" 0 8 "void()" `715  "--- CONFIGURACIÓN DE HARDWARE ---"
+C L "MAIN" 0 10 1 "FUNCTION"
+C L "MAIN" 0 10 1 "FUNCTION"
+C L "MAIN" 0 10 2 "FUNCTION"
+C L "MAIN" 0 10 1 "FUNCTION"
+C L "MAIN" 0 10 1 "FUNCTION"
+C L "MAIN" 0 10 1 "FUNCTION"
+C L "MAIN" 0 10 1 "FUNCTION"
+C L "MAIN" 0 10 1 "FUNCTION"
 F B "reset_cpu" 0 0
 F B "abs" 1 0
 F B "sleep" 0 0

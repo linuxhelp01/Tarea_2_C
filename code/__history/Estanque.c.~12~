@@ -1,0 +1,93 @@
+// --- CONSTANTES FÍSICAS ---
+#define CAUDAL          5   // m3 por segundo
+#define DELTA_MAIN_MS   100    // El main corre cada 0.1 segundos
+
+// --- VARIABLES GLOBALES (ACCESIBLES DESDE MAIN) ---
+int8  nivel = 0;           // Nivel del agua (0-100%)
+int16 tiempo_segundos = 0; // Tiempo acumulado
+int8  estado = 0;          // 0=Parado, 1=Llenando, 2=Vaciando
+
+// Variables internas para cálculos
+int32 ms_acumulados = 0;       // Contador interno de tiempo
+int32 ms_para_subir_1_porc = 0;// Velocidad calculada según la forma
+
+// ---------------------------------------------------------
+// 1. DEFINIR FORMA Y VELOCIDAD (Lee Switch E0)
+// ---------------------------------------------------------
+void actualizar_forma() {
+   float volumen = 0.0;
+   
+   // Si el Switch E0 es 0 (CERRADO/TIERRA) -> PRISMA
+   if(input(PIN_E0) == 0) {
+      volumen = 2.0 * 2.0 * 3.0; // Largo * Ancho * Alto (2x2x3 = 12 m3)
+   } 
+   // Si el Switch E0 es 1 (ABIERTO/AIRE) -> CILINDRO
+   else {
+      volumen = 3.1416 * 1.5 * 1.5 * 3.0; // PI * r^2 * h (~21.2 m3)
+   }
+
+   // Calculamos cuan rápido debe llenarse (Tiempo Real)
+   float tiempo_total = volumen / CAUDAL;      // Segundos totales para llenar
+   float tiempo_1_proc = tiempo_total / 100.0; // Segundos para subir 1%
+   
+   // Convertimos a milisegundos para el contador del PIC
+   ms_para_subir_1_porc = (int32)(tiempo_1_proc * 1000.0);
+}
+
+// ---------------------------------------------------------
+// 2. LEER BOTONES Y CONTROLAR ESTADO (Lee E1 y E2)
+// ---------------------------------------------------------
+void leer_botones() {
+   // Lógica PULL-UP: 0 significa presionado
+   
+   // BOTÓN LLENAR (E1) - Solo si está parado y nivel < 80
+   if (input(PIN_E1) == 0 && estado == 0 && nivel < 80) {
+      estado = 1; // Activar Llenado
+   }
+
+   // BOTÓN VACIAR (E2) - Solo si está parado y nivel >= 80
+   else if (input(PIN_E2) == 0 && estado == 0 && nivel >= 80) {
+      estado = 2; // Activar Vaciado
+   }
+}
+
+// ---------------------------------------------------------
+// 3. EJECUTAR SIMULACIÓN (Motor)
+// ---------------------------------------------------------
+void ejecutar_simulacion() {
+   
+   // Solo hacemos algo si la bomba está prendida (Estado 1 o 2)
+   if (estado != 0) {
+      ms_acumulados += DELTA_MAIN_MS; // Sumamos 100ms
+      
+      // CONTADOR DE SEGUNDOS (Para el display)
+      // Cada 1000ms (10 pasos de 100ms) sumamos 1 segundo
+      if (ms_acumulados % 1000 == 0) {
+         tiempo_segundos++;
+      }
+
+      // CONTADOR DE NIVEL
+      // Si pasaron los milisegundos necesarios para mover 1%
+      if (ms_acumulados >= ms_para_subir_1_porc) {
+         ms_acumulados = 0; // Reset cuenta parcial
+
+         // -- CASO LLENANDO --
+         if (estado == 1) {
+            nivel++;
+            if (nivel >= 80) { // Límite Superior
+               nivel = 80;
+               estado = 0; // Parar automático
+            }
+         }
+         
+         // -- CASO VACIANDO --
+         else if (estado == 2) {
+            nivel--;
+            if (nivel <= 20) { // Límite Inferior
+               nivel = 20;
+               estado = 0; // Parar automático
+            }
+         }
+      }
+   }
+}

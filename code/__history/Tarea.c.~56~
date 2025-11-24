@@ -1,0 +1,62 @@
+#include <16F877A.h>
+#fuses HS,NOWDT,NOPUT,NOLVP,NOPROTECT,BROWNOUT
+#use delay(clock=4M) // Oscilador de 4MHz según PDF
+
+// --- INCLUSIÓN DE MÓDULOS ---
+#include "display_max.c"      // Módulo Visual
+#include "Estanque.c"  // Módulo Lógico
+
+// --- DEFINICIÓN DE PINES DE CONTROL ---
+// Usamos PULL-UP externo o interno (Input=0 al presionar si es a GND)
+// Según tu guía: "1 (cerrado)". Asumiremos lógica positiva o negativa según tu circuito.
+// Si tu switch conecta a 5V -> Input es 1. Si conecta a GND -> Input es 0.
+// AJUSTA ESTO SEGÚN TU PROTEUS:
+#define SW_FORM   PIN_E0
+#define SW_FILL   PIN_E1
+#define SW_EMPTY  PIN_E2
+
+void main() {
+   // 1. INICIALIZACIÓN
+   setup_adc_ports(NO_ANALOGS);
+   set_tris_e(0xFF); // Puerto E todo entrada
+   max_init();       // Iniciar Pantalla
+   
+   // Configuración inicial del estanque (Lectura primer estado)
+   // Suponemos: 1=Prisma, 0=Cilindro (Ajustar según tu lógica de switch)
+   estanque_configurar_fisica(input(SW_FORM));
+
+   // Mensaje de inicio (00 00)
+   max_send(1, 0); max_send(2, 0); // Nivel
+   max_send(3, 0); max_send(4, 0); // Tiempo
+
+   // 2. BUCLE INFINITO
+   while(TRUE) {
+      
+      // A. CHECK FORM: Revisar si cambiaron la forma del tanque
+      // Solo permitimos cambiar si está quieto (estado 0)
+      if (estado_proceso == 0) {
+         estanque_configurar_fisica(input(SW_FORM));
+      }
+
+      // B. CHECK CONTROL: Revisar botones de Llenar/Vaciar
+      estanque_procesar_botones(input(SW_FILL), input(SW_EMPTY));
+
+      // C. SIMULACIÓN: Calcular paso de física
+      estanque_simular_paso();
+
+      // D. VISUALIZACIÓN: Actualizar Displays
+      // Digitos 1 y 2: Porcentaje de Nivel
+      max_send(2, (nivel_porcentaje / 10) % 10); // Decena
+      max_send(1, nivel_porcentaje % 10);        // Unidad
+      
+      // Digitos 3 y 4: Tiempo Transcurrido
+      max_send(4, (tiempo_transcurrido_seg / 10) % 10); // Decena seg
+      max_send(3, tiempo_transcurrido_seg % 10);        // Unidad seg
+      // Nota: Si quieres ver centenas, ajusta los índices (3,4, etc)
+
+      // E. TIEMPO REAL
+      // Este delay es CRÍTICO para que la física funcione.
+      // Definido en estanque_fisica.c como 100ms
+      delay_ms(DELTA_TIME_MS); 
+   }
+}

@@ -7,12 +7,22 @@
 01B     CCP_2
 01B     CCP_2_LOW
 01C     CCP_2_HIGH
-020.0   estado
-021     max_send.reg
-021     @delay_ms1.P1
-022     max_send.data
-023     max_sendByte.data
-024     max_sendByte.i
+020     nivel
+021     tiempo_seg
+022     estado
+023-024 ms_reloj
+025     ms_agua
+026     velocidad_actual
+027     @delay_ms1.P1
+027     simular_estanque.@SCRATCH1
+027     MAIN.@SCRATCH1
+028     @DIV88.P1
+028     max_send.reg
+029     @DIV88.P1
+029     max_send.data
+02A     max_sendByte.data
+02A     @DIV88.@SCRATCH1
+02B     max_sendByte.i
 077     @SCRATCH
 078     @SCRATCH
 078     _RETURN_
@@ -24,28 +34,29 @@
 10D-10E @READ_PROGRAM_MEMORY8.P2
 
 ROM Allocation:
-000004  max_sendByte
-000014  max_pulse_clk
-000024  max_send
-000033  max_init
-00004A  @delay_ms1
-000078  conf_button
-000087  MAIN
-000087  @cinit1
-000092  @cinit2
+000004  @delay_ms1
+000019  max_sendByte
+000029  max_pulse_clk
+000037  max_send
+000046  max_init
+000088  simular_estanque
+0000E4  @DIV88
+0000F9  MAIN
+0000F9  @cinit1
+00010B  @cinit2
 
 Project Directory:
     C:\Users\felip\OneDrive\Desktop\C\code\
 
 Project Files:
-    Tarea.c                                                 [19-nov.-25 16:52  CRC=C162002F]
+    Tarea.c                                                 [23-nov.-25 23:41  CRC=009D417B]
     ..\..\..\..\..\..\Program Files (x86)\PICC\Devices\16F877A.h [21-oct.-22 11:02  CRC=6A06E202]
-    display_max.c                                           [18-nov.-25 23:50  CRC=8312BBEC]
-    Botton.c                                                [19-nov.-25 01:14  CRC=7AC4FCDA]
+    display_max.c                                           [23-nov.-25 22:36  CRC=D33A267C]
+    Estanque.c                                              [23-nov.-25 23:53  CRC=10910D56]
 
-Source signature=A40597D1
+Source signature=5F0064A5
 Program memory checksum=0000
-Hex file CRC=968B
+Hex file CRC=5E1D
 
 Units:
     C:\Users\felip\OneDrive\Desktop\C\code\Tarea (main)

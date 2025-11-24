@@ -1,0 +1,35 @@
+#include <16F877A.h>
+#fuses HS,NOWDT,NOPUT,NOLVP,NOPROTECT,BROWNOUT
+#use delay(clock=4M)
+
+#include "display_max.c"
+#include "Estanque.c"
+
+void main() {
+   // Configuración
+   setup_adc_ports(NO_ANALOGS);
+   set_tris_e(0b00000111); // E0, E1, E2 entradas
+   max_init();
+
+   // Limpiar pantalla
+   max_send(1,0); max_send(2,0); max_send(3,0); max_send(4,0);
+
+   while(TRUE) {
+      
+      // 1. CEREBRO
+      // Esta función decide si lee el switch o si mueve el agua
+      gestionar_sistema();
+
+      // 2. PANTALLA
+      // Nivel (Derecha)
+      max_send(1, nivel % 10);
+      max_send(2, (nivel / 10) % 10);
+      
+      // Tiempo (Izquierda)
+      max_send(3, tiempo_seg % 10);
+      max_send(4, (tiempo_seg / 10) % 10);
+
+      // 3. RELOJ
+      delay_ms(100); // 100ms (Coincide con DELTA_MS)
+   }
+}

@@ -1,0 +1,48 @@
+#include <16F877A.h>
+#fuses HS,NOWDT,NOPUT,NOLVP,NOPROTECT,BROWNOUT
+#use delay(clock=4M)
+
+#include "display_max.c"
+#include "Estanque.c"
+
+void main() {
+   // --- CONFIGURACIÓN ---
+   setup_adc_ports(NO_ANALOGS); // Todo digital
+   set_tris_e(0b00000111);      // Puerto E como entrada (E0, E1, E2)
+   max_init();                  // Iniciar Pantalla
+
+   // Limpiar pantalla al inicio
+   max_send(1, 0); max_send(2, 0);
+   max_send(3, 0); max_send(4, 0);
+   
+   // Configurar volumen inicial antes de entrar al bucle
+   actualizar_forma(); 
+
+   // --- BUCLE INFINITO ---
+   while(TRUE) {
+      
+      // PASO 1: ¿Qué forma tiene el tanque? (Solo si está parado)
+      if (estado == 0) {
+         actualizar_forma();
+      }
+
+      // PASO 2: ¿Presionaron algún botón?
+      leer_botones();
+
+      // PASO 3: Calcular Física (Aumentar/Disminuir nivel)
+      ejecutar_simulacion();
+
+      // PASO 4: Mostrar en Display
+      // Digitos 1 y 2 (Derecha) -> NIVEL %
+      max_send(1, nivel % 10);
+      max_send(2, (nivel / 10) % 10);
+      
+      // Digitos 3 y 4 (Izquierda) -> TIEMPO (segundos)
+      max_send(3, tiempo_segundos % 10);
+      max_send(4, (tiempo_segundos / 10) % 10);
+      
+      // PASO 5: Retardo base (100ms)
+      // Fundamental para que la simulación tenga velocidad controlada
+      delay_ms(100); 
+   }
+}

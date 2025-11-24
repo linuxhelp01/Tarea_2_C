@@ -1,0 +1,104 @@
+// --- CONSTANTES ---
+#define CAUDAL        2.00  // m3/seg (Ajusta esto según la velocidad que quieras probar)
+#define DELTA_MS      100   // Tiempo del ciclo main (0.1s)
+
+// --- VARIABLES GLOBALES ---
+int8  nivel = 0;           
+int16 tiempo_seg = 0;      // Segundos transcurridos en el proceso ACTUAL
+int8  estado = 0;          // 0=Stop, 1=Llenando, 2=Vaciando
+
+// --- VARIABLES INTERNAS ---
+int32 ms_contador_nivel = 0; // Temporizador para la física (agua)
+int32 ms_contador_reloj = 0; // Temporizador para el reloj (segundos)
+int32 ms_velocidad = 0;      // Umbral calculado
+
+// ---------------------------------------------------------
+// CALCULAR FÍSICA
+// ---------------------------------------------------------
+void leer_forma_fisica() {
+   float volumen = 0.0;
+   
+   // SWITCH E0 (0 = Cerrado/Prisma, 1 = Abierto/Cilindro)
+   if (input(PIN_E0) == 0) {
+      volumen = 12.0;       // PRISMA (2x2x3)
+   } else {
+      volumen = 21.205;     // CILINDRO (Pi*1.5^2*3)
+   }
+
+   // Cálculo de cuánto tardar en subir/bajar 1%
+   float tiempo_total = volumen / CAUDAL;
+   float tiempo_1_porc = tiempo_total / 100.0;
+   
+   ms_velocidad = (int32)(tiempo_1_porc * 1000.0);
+}
+
+// ---------------------------------------------------------
+// LÓGICA PRINCIPAL
+// ---------------------------------------------------------
+void gestionar_sistema() {
+   
+   // ======================================================
+   // FASE 1: REPOSO (Detectar inicio de proceso)
+   // ======================================================
+   if (estado == 0) {
+      leer_forma_fisica();
+
+      // INICIO LLENADO (Botón E1)
+      if (input(PIN_E1) == 0 && nivel < 80) {
+         estado = 1; 
+         
+         // --- REINICIO DE VARIABLES AL INICIAR ---
+         tiempo_seg = 0;        // Resetear reloj visual
+         ms_contador_reloj = 0; // Resetear contador interno reloj
+         ms_contador_nivel = 0; // Resetear contador interno física
+      }
+      
+      // INICIO VACIADO (Botón E2)
+      else if (input(PIN_E2) == 0 && nivel >= 80) {
+         estado = 2; 
+         
+         // --- REINICIO DE VARIABLES AL INICIAR ---
+         tiempo_seg = 0;        // Resetear reloj visual
+         ms_contador_reloj = 0; // Resetear contador interno reloj
+         ms_contador_nivel = 0; // Resetear contador interno física
+      }
+   }
+
+   // ======================================================
+   // FASE 2: MOVIMIENTO (Ejecutar proceso)
+   // ======================================================
+   else {
+      // Avanzamos los contadores internos
+      ms_contador_nivel += DELTA_MS;
+      ms_contador_reloj += DELTA_MS;
+
+      // A. CONTROL DEL RELOJ (Independiente del caudal)
+      // Cada 1000ms exactos, sumamos 1 segundo
+      if (ms_contador_reloj >= 1000) {
+         tiempo_seg++;
+         ms_contador_reloj = 0; // Reset parcial reloj
+      }
+
+      // B. CONTROL DEL NIVEL (Dependiente del caudal/forma)
+      if (ms_contador_nivel >= ms_velocidad) {
+         ms_contador_nivel = 0; // Reset parcial física
+
+         // LOGICA DE LLENADO
+         if (estado == 1) { 
+            nivel++;
+            if (nivel >= 80) { 
+               nivel = 80; 
+               estado = 0; // Termina el proceso (El tiempo se congela aquí)
+            }
+         }
+         // LOGICA DE VACIADO
+         else if (estado == 2) { 
+            nivel--;
+            if (nivel <= 20) { 
+               nivel = 20; 
+               estado = 0; // Termina el proceso (El tiempo se congela aquí)
+            }
+         }
+      }
+   }
+}
